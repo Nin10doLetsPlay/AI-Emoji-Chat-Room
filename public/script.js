@@ -25,7 +25,6 @@ const generatePanel = document.getElementById('generatePanel')
 const generateTitle = document.getElementById('generateTitle')
 const generatePromptInput = document.getElementById('generatePromptInput')
 const generateEmojiBtn = document.getElementById('generateEmojiBtn')
-const cancelGenerateBtn = document.getElementById('cancelGenerateBtn')
 
 let currentUsername = 'Anonymous'
 let selectedBaseEmoji = null
@@ -385,7 +384,6 @@ function sendEmoji (emojiItemData) {
 }
 
 generateEmojiBtn.onclick = generateFakeEmoji
-cancelGenerateBtn.onclick = closeGeneratePanel
 
 loadGeneratedEmojis()
 renderEmojis()
