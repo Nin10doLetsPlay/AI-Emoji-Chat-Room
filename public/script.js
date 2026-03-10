@@ -4,7 +4,6 @@ const signupScreen = document.getElementById('signupScreen')
 const chatScreen = document.getElementById('chatScreen')
 const loginTopBtn = document.getElementById('loginTopBtn')
 
-const anonymousBtn = document.getElementById('anonymousBtn')
 const showLoginBtn = document.getElementById('showLoginBtn')
 const showSignupBtn = document.getElementById('showSignupBtn')
 const backFromLoginBtn = document.getElementById('backFromLoginBtn')
@@ -14,10 +13,10 @@ const signupBtn = document.getElementById('signupBtn')
 const logoutBtn = document.getElementById('logoutBtn')
 
 const chat = document.getElementById('chat')
-const input = document.getElementById('messageInput')
-const sendBtn = document.getElementById('sendBtn')
+const nextStrangerBtn = document.getElementById('nextStrangerBtn')
 
 const socket = io()
+const searchingScreen = document.getElementById('searchingScreen')
 
 const findStrangerBtn = document.getElementById('findStrangerBtn')
 const leaveChatBtn = document.getElementById('leaveChatBtn')
@@ -41,6 +40,7 @@ const cancelGenerateBtn = document.getElementById('cancelGenerateBtn')
 
 let currentUsername = 'Anonymous'
 let selectedBaseEmoji = null
+let isMatched = false
 
 async function convertImageToPNG (url) {
   const img = new Image()
@@ -77,13 +77,40 @@ async function convertImageToPNG (url) {
   return canvas.toDataURL('image/png')
 }
 
+function clearChat () {
+  chat.innerHTML = ''
+}
+
+function startSearching () {
+  if (!currentUsername || currentUsername.trim() === '') {
+    currentUsername = 'Anonymous'
+  }
+
+  isMatched = false
+  updateChatAvailability()
+  clearChat()
+  showScreen(searchingScreen)
+  socket.emit('find-stranger')
+}
+
 function showScreen (screenToShow) {
   welcomeScreen.classList.add('hidden')
   loginScreen.classList.add('hidden')
   signupScreen.classList.add('hidden')
+  searchingScreen.classList.add('hidden')
   chatScreen.classList.add('hidden')
 
   screenToShow.classList.remove('hidden')
+}
+
+function updateChatAvailability() {
+  const emojiButtons = document.querySelectorAll('.emoji-btn')
+
+  emojiButtons.forEach(button => {
+    button.disabled = !isMatched
+    button.style.opacity = isMatched ? '1' : '0.5'
+    button.style.pointerEvents = isMatched ? 'auto' : 'none'
+  })
 }
 
 function updateAuthUI () {
@@ -94,21 +121,6 @@ function updateAuthUI () {
     loginTopBtn.classList.add('hidden')
     logoutBtn.classList.remove('hidden')
   }
-}
-
-function sendMessage() {
-  const message = input.value.trim();
-
-  if (message === '') {
-    return;
-  }
-
-  socket.emit('chat-message', {
-    username: currentUsername,
-    text: message
-  });
-
-  input.value = '';
 }
 
 function saveGeneratedEmojis () {
@@ -178,37 +190,58 @@ function renderEmojis () {
   })
 }
 
-findStrangerBtn.onclick = () => {
-  socket.emit('find-stranger')
+findStrangerBtn.onclick = startSearching
+
+nextStrangerBtn.onclick = () => {
+  socket.emit('leave-chat')
+  startSearching()
 }
 
 leaveChatBtn.onclick = () => {
   socket.emit('leave-chat')
+  isMatched = false
+  updateChatAvailability()
+  clearChat()
+  showScreen(welcomeScreen)
 }
 
-function addSystemMessage(text) {
-  const div = document.createElement('div');
-  div.classList.add('system-message');
-  div.textContent = text;
+function addSystemMessage (text) {
+  const div = document.createElement('div')
+  div.classList.add('system-message')
+  div.textContent = text
 
-  chat.appendChild(div);
-  chat.scrollTop = chat.scrollHeight;
+  chat.appendChild(div)
+  chat.scrollTop = chat.scrollHeight
 }
 
 socket.on('system-message', text => {
+  if (text === 'A stranger has disconnected.') {
+    isMatched = false
+    updateChatAvailability()
+    addSystemMessage(text)
+    return
+  }
+
+  if (text === 'You left the chat.') {
+    isMatched = false
+    updateChatAvailability()
+    return
+  }
+
   addSystemMessage(text)
 })
 
 socket.on('matched', () => {
+  isMatched = true
+  updateChatAvailability()
+  clearChat()
+  showScreen(chatScreen)
   addSystemMessage('You are now connected to a stranger.')
 })
 
-socket.on('chat-message', (messageData) => {
+socket.on('chat-message', messageData => {
   const messageWrapper = document.createElement('div')
   messageWrapper.classList.add('message-wrapper')
-
-  const messageBubble = document.createElement('div')
-  messageBubble.classList.add('message-bubble')
 
   if (messageData.senderId === socket.id) {
     messageWrapper.classList.add('my-message')
@@ -218,27 +251,28 @@ socket.on('chat-message', (messageData) => {
 
   const usernameDiv = document.createElement('div')
   usernameDiv.classList.add('message-username')
-  usernameDiv.textContent = messageData.senderId === socket.id ? 'You' : 'Stranger'
+  usernameDiv.textContent =
+    messageData.senderId === socket.id ? 'You' : 'Stranger'
 
-  const contentDiv = document.createElement('div')
-  contentDiv.classList.add('message-text')
+  const messageBubble = document.createElement('div')
+  messageBubble.classList.add('message-bubble')
 
-  if (messageData.text) {
-    contentDiv.textContent = messageData.text
-  } else if (messageData.emoji) {
+  if (messageData.emoji) {
     if (messageData.emoji.type === 'text') {
-      contentDiv.textContent = messageData.emoji.value
+      const emojiDiv = document.createElement('div')
+      emojiDiv.classList.add('message-emoji')
+      emojiDiv.textContent = messageData.emoji.value
+      messageBubble.appendChild(emojiDiv)
     } else if (messageData.emoji.type === 'image') {
       const img = document.createElement('img')
       img.src = messageData.emoji.value
       img.alt = 'Emoji'
       img.classList.add('chat-emoji-img')
-      contentDiv.appendChild(img)
+      messageBubble.appendChild(img)
     }
   }
 
-  messageBubble.appendChild(usernameDiv)
-  messageBubble.appendChild(contentDiv)
+  messageWrapper.appendChild(usernameDiv)
   messageWrapper.appendChild(messageBubble)
 
   chat.appendChild(messageWrapper)
@@ -254,15 +288,26 @@ function deleteGeneratedEmoji (index) {
 function openGeneratePanel (emojiItemData) {
   selectedBaseEmoji = emojiItemData
 
-  let label = 'generated emoji'
+  generateTitle.innerHTML = ''
+
+  const labelSpan = document.createElement('span')
+  labelSpan.textContent = 'Generate from '
+
+  generateTitle.appendChild(labelSpan)
 
   if (emojiItemData.type === 'text') {
-    label = emojiItemData.value
-  } else if (emojiItemData.type === 'image' && emojiItemData.base) {
-    label = emojiItemData.base
+    const emojiSpan = document.createElement('span')
+    emojiSpan.classList.add('generate-title-emoji')
+    emojiSpan.textContent = emojiItemData.value
+    generateTitle.appendChild(emojiSpan)
+  } else if (emojiItemData.type === 'image') {
+    const img = document.createElement('img')
+    img.src = emojiItemData.value
+    img.alt = 'Custom emoji'
+    img.classList.add('generate-title-img')
+    generateTitle.appendChild(img)
   }
 
-  generateTitle.textContent = `Generate from ${label}`
   generatePromptInput.value = ''
   generatePanel.classList.remove('hidden')
 }
@@ -327,21 +372,19 @@ User idea: ${prompt}
   }
 }
 
-function sendEmoji(emojiItemData) {
+function sendEmoji (emojiItemData) {
+  if (!isMatched) {
+    return
+  }
+
   socket.emit('chat-message', {
     username: currentUsername,
     emoji: emojiItemData
-  });
+  })
 }
 
 generateEmojiBtn.onclick = generateFakeEmoji
 cancelGenerateBtn.onclick = closeGeneratePanel
-
-anonymousBtn.onclick = () => {
-  currentUsername = 'Anonymous'
-  updateAuthUI()
-  showScreen(chatScreen)
-}
 
 showLoginBtn.onclick = () => {
   showScreen(loginScreen)
@@ -394,15 +437,7 @@ logoutBtn.onclick = () => {
 loginTopBtn.onclick = () => {
   showScreen(loginScreen)
 }
-
-sendBtn.onclick = sendMessage
-
-input.addEventListener('keydown', event => {
-  if (event.key === 'Enter') {
-    sendMessage()
-  }
-})
-
 loadGeneratedEmojis()
 renderEmojis()
 updateAuthUI()
+updateChatAvailability()

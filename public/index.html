@@ -15,7 +15,7 @@
         <p class="subtitle">Create cursed emoji language with your friends.</p>
 
         <div class="button-column">
-          <button id="anonymousBtn">Continue as Anonymous</button>
+          <button id="findStrangerBtn">Find Stranger</button>
           <button id="showLoginBtn">Log In</button>
           <button id="showSignupBtn">Sign Up</button>
         </div>
@@ -45,15 +45,23 @@
         </div>
       </section>
 
+      <section id="searchingScreen" class="screen hidden">
+        <div class="searching-box">
+          <div class="searching-text">Searching for a stranger</div>
+        </div>
+      </section>
+
       <section id="chatScreen" class="screen hidden">
         <div class="top-bar">
-          <button id="loginTopBtn">Log In</button>
-          <button id="logoutBtn" class="hidden">Log Out</button>
-        </div>
+          <div class="chat-top-actions">
+            <button id="nextStrangerBtn">Next Stranger</button>
+            <button id="leaveChatBtn">Leave Chat</button>
+          </div>
 
-        <div class="matchmaking-row">
-          <button id="findStrangerBtn">Find Stranger</button>
-          <button id="leaveChatBtn">Leave Chat</button>
+          <div>
+            <button id="loginTopBtn">Log In</button>
+            <button id="logoutBtn" class="hidden">Log Out</button>
+          </div>
         </div>
 
         <div id="chat"></div>
@@ -71,15 +79,6 @@
             <button id="generateEmojiBtn">Generate</button>
             <button id="cancelGenerateBtn">Cancel</button>
           </div>
-        </div>
-
-        <div class="input-row">
-          <input
-            id="messageInput"
-            type="text"
-            placeholder="Type a message..."
-          />
-          <button id="sendBtn">Send</button>
         </div>
       </section>
     </div>
