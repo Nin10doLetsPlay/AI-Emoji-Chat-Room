@@ -215,7 +215,7 @@ function addSystemMessage (text) {
 }
 
 socket.on('system-message', text => {
-  if (text === 'A stranger has disconnected.') {
+  if (text === 'Stranger has disconnected.') {
     isMatched = false
     updateChatAvailability()
     addSystemMessage(text)
