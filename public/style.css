@@ -16,12 +16,22 @@ body {
 
 .app {
   width: 100%;
-  max-width: 800px;
+  max-width: 700px;
   background: #141414;
   border: 1px solid #2a2a2a;
-  border-radius: 14px;
+  border-radius: 18px;
   padding: 24px;
   box-shadow: 0 0 30px rgba(0, 0, 0, 0.4);
+}
+
+.screen {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.hidden {
+  display: none;
 }
 
 h1 {
@@ -35,6 +45,60 @@ h1 {
   font-size: 0.95rem;
 }
 
+.button-column {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.input-row {
+  display: flex;
+  gap: 10px;
+}
+
+input {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid #2f2f2f;
+  background: #0f0f0f;
+  color: white;
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 0.2s ease, transform 0.2s ease;
+}
+
+input:focus {
+  border-color: #666666;
+  transform: scale(1.01);
+}
+
+button {
+  border: none;
+  border-radius: 12px;
+  padding: 12px 18px;
+  background: white;
+  color: black;
+  font-weight: bold;
+  cursor: pointer;
+  transition: transform 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease;
+}
+
+button:hover {
+  transform: translateY(-2px) scale(1.02);
+}
+
+button:active {
+  transform: scale(0.98);
+}
+
+.top-bar {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+}
+
 #chat {
   height: 350px;
   overflow-y: auto;
@@ -42,7 +106,6 @@ h1 {
   border: 1px solid #262626;
   border-radius: 14px;
   padding: 14px;
-  margin-bottom: 16px;
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -56,52 +119,90 @@ h1 {
   border-radius: 12px;
   max-width: 80%;
   word-wrap: break-word;
-
   opacity: 0;
   transform: translateY(12px);
   animation: slideFadeIn 0.35s ease forwards;
 }
 
-.input-row {
+.emoji-bar {
+  display: flex;
+  gap: 6px;          /* spacing between emojis */
+  padding: 6px 8px;  /* inner space of the bar */
+  border: 1px solid #262626;
+  border-radius: 10px;
+  background: #0f0f0f;
+  margin-bottom: 8px;
+}
+
+.emoji-btn {
+  font-size: 22px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+.emoji-btn:hover {
+  transform: scale(1.12);
+}
+
+.emoji-btn:active {
+  transform: scale(0.95);
+}
+
+.emoji-item {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.generate-from-btn {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  padding: 0;
+  font-size: 12px;
+  background: white;
+  color: black;
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+
+.emoji-item:hover .generate-from-btn {
+  display: inline-flex;
+}
+
+.generate-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid #262626;
+  border-radius: 12px;
+  background: #0f0f0f;
+  margin-bottom: 12px;
+}
+
+.generate-actions {
   display: flex;
   gap: 10px;
 }
 
-#messageInput {
-  flex: 1;
-  padding: 12px 14px;
-  border-radius: 12px;
-  border: 1px solid #2f2f2f;
-  background: #0f0f0f;
-  color: white;
-  font-size: 1rem;
-  outline: none;
-  transition: border-color 0.2s ease, transform 0.2s ease;
+.generated-emoji-img,
+.chat-emoji-img {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  display: block;
 }
 
-#messageInput:focus {
-  border-color: #666666;
-  transform: scale(1.01);
-}
-
-#sendBtn {
-  border: none;
-  border-radius: 12px;
-  padding: 12px 18px;
-  background: white;
-  color: black;
-  font-weight: bold;
-  cursor: pointer;
-  transition: transform 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease;
-}
-
-#sendBtn:hover {
-  transform: translateY(-2px) scale(1.03);
-  box-shadow: 0 8px 20px rgba(255, 255, 255, 0.144);
-}
-
-#sendBtn:active {
-  transform: scale(0.98);
+.chat-emoji-img {
+  vertical-align: middle;
 }
 
 @keyframes slideFadeIn {
